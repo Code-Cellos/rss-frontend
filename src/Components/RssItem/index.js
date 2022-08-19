@@ -1,45 +1,68 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Card, Text, Button, Group } from '@mantine/core';
-// import '../../../node_modules/rss-parser/dist/rss-parser.min.js';
-// let Parser = require('rss-parser');
-// let parser = new Parser();
-const { parse } = require('rss-to-json');
-const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+import { withAuth0 } from '@auth0/auth0-react';
 
-(async () => {
-  var feed1 = await parse(
-    CORS_PROXY + 'https://www.reddit.com/r/MurderedByWords/.rss',
-  );
+function RssItem(props) {
+  const rssItems = useSelector(state => state.rssItems.list);
+  // const [rssItems, setRssItems] = useState(data);
 
-  console.log(feed1);
-  console.log('CATEGORY');
-  for (let i = 0; i < 3; i++) {
-    feed1.items[i].statusRead = false;
-    console.log(`${[i + 1]}. ${feed1.items[i].title}`);
-    console.log(feed1.items[i].statusRead);
-  }
-})();
+  // useEffect(() => {
+  //   const getFeeds = async () => {
+  //     try {
+  //       let request = await axios.get('http://localhost:3001/feeds');
+  //       console.log('REQUEST', request.data.items);
+  //       setRssItems(request.data.items);
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //   };
+  //   getFeeds();
+  //   // const processFeeds = () => {
+  //   //   const feedsFromServer = getFeeds();
+  //   //   console.log('FEEDS FROM SERVER', feedsFromServer);
+  //   //   // setRssItems(feedsFromServer);
+  //   // };
+  //   // processFeeds();
+  // }, []);
 
-function RssItem() {
+  // const getFeeds = async () => {
+  //   try {
+  //     let request = await axios.get('http://localhost:3001/feeds');
+  //     console.log('REQUEST', request.data.items);
+  //     setRssItems(request.data.items);
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // };
+
+  // console.log('DATA', data);
+  console.log('rssITEMS', rssItems);
+
   return (
     <>
-      <Card shadow='sm' p='lg' radius='md' withBorder>
-        {/* HEADER TEXT */}
-        <Group position='apart' mt='md' mb='xs'>
-          <Text weight={500}>Norway Fjord Adventures</Text>
-        </Group>
-        {/* MIDDLE TEXT */}
-        <Text size='sm' color='dimmed'>
-          With Fjord Tours you can explore more of the magical fjord landscapes
-          with tours and activities on and around the fjords of Norway
-        </Text>
-        {/* BOTTOM BUTTON */}
-        <Button variant='light' color='blue' mt='md' radius='md'>
-          Book classic tour now
-        </Button>
-      </Card>
+      {props.auth0.isAuthenticated
+        ? rssItems.map((rssItem, index) => {
+          return (
+            <Card shadow='sm' p='lg' radius='md' key={`rssItem-${index}`} withBorder>
+              <Group position='apart' mt='md' mb='xs'>
+                {/* TITLE TEXT */}
+                <Text weight={500}>{rssItem.title}</Text>
+              </Group>
+              {/* MIDDLE TEXT */}
+              <Text size='sm' color='dimmed'>
+                {rssItem.contentSnippet}
+              </Text>
+              {/* BOTTOM BUTTON */}
+              <Button variant='light' color='blue' mt='md' radius='md'>
+                {rssItem.link}
+              </Button>
+            </Card>
+          );
+        })
+        : null}
     </>
   );
 }
 
-export default RssItem;
+export default withAuth0(RssItem);
